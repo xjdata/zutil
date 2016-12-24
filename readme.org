@@ -1,47 +1,239 @@
-* ZUtil
+目录
 
-  懒人的自造轮子
+更易配置和使用的训练工具
+获取工具
+配置
+训练
+字符识别歧义校正
+旧版本格式
+新版本格式
+词典: DAWG 文件
+续上篇: 《Tesseract:训练》。本篇主要解释一下 DAWG 文件的生成方法，并提供一个更易用的训练工具。
 
-** Software
+更易配置和使用的训练工具
 
-   一些常用或喜欢的工具集合
+Tesseract 自身提供的训练工具分为了多个不同的程序，用起来比较灵活，但说实话，要记住每个程序的使用方法还真是一件费力的事情。此外，为了得到较好的训练结果，往往会需要用多种字体进行训练，而不同的字体除了一两个参数(一般为字体名称、位置)不一样外，其他的过程、参数都是相似的，这里有大量的重复性操作。
 
-   + [[https://www.gnu.org/software/emacs/][Emacs]]: 就差一个脚踏板了
-   + [[http://mycli.net/][mycli]]: 一个带自动补全和语法高亮的 MySQL(MariaDB, Percona)客户端
-   + [[https://github.com/jkbrzt/httpie][HTTPie]]: 易用的命令行 HTTP 客户端(cURL-like)
-   + [[https://krita.org/][Krita]]: 美观的跨平台绘画工具
-   + [[https://github.com/ggreer/the_silver_searcher][ag]]: 强大的源代码搜索工具
-   + [[http://regexper.com/][regexper]]: 正则表达式可视化工具
-   + [[https://stedolan.github.io/jq/][jq]]: 命令行 JSON 数据处理
-   + [[http://man7.org/linux/man-pages/man1/column.1.html][column]]: 将输入按列对齐输出
+为此我写了一个更好的训练工具，只要开始时在配置文件中设置好字体、文本等信息，然后就可以敲击几个简单的命令进行训练。当然了，与此同时，训练过程中的灵活性会受到一定的影响。
 
-   以及常用的 Chrome 扩展:
-   + [[https://chrome.google.com/webstore/detail/adblock-plus/cfhdojbkjhnklbpkdaibdccddilifddb?utm_source%3Dchrome-app-launcher-info-dialog][Adblock Plus]]: 强大好用的广告拦截器
-   + [[https://chrome.google.com/webstore/detail/better-history/obciceimmggglbmelaidpjlmodcebijb?utm_source%3Dchrome-app-launcher-info-dialog][Better History]]: 更好的历史记录
-   + [[https://chrome.google.com/webstore/detail/avatars-for-github/pgjmdbklnfklcjfbonjfkdhaonlfogbb?utm_source%3Dchrome-app-launcher-info-dialog][Avatars for Github]]: 在 Github 的 feeds 流页面显示用户头像
-   + [[https://chrome.google.com/webstore/detail/isometric-contributions/mjoedlfflcchnleknnceiplgaeoegien?utm_source%3Dchrome-app-launcher-info-dialog][Isometric Contributions]]: Github 个人 contributions 立体展示
-   + [[https://chrome.google.com/webstore/detail/octotree/bkhaagjahfmjljalopjnoealnfndnagc?utm_source%3Dchrome-app-launcher-info-dialog][Octotree]]: Github 项目树状浏览工具
-   + [[https://chrome.google.com/webstore/detail/onetab/chphlpgkkbolifaimnlloiipkdnihall?utm_source%3Dchrome-app-launcher-info-dialog][OneTab]]: 标签页缓存
-   + [[https://chrome.google.com/webstore/detail/simpleundoclose/emhohdghchmjepmigjojkehidlielknj?utm_source%3Dchrome-app-launcher-info-dialog][SimpleUndoClose]]: 撤销关闭的标签页(更好用的 Ctrl+Shift+T)
-   + [[https://chrome.google.com/webstore/detail/smartup-gestures/bgjfekefhjemchdeigphccilhncnjldn?utm_source%3Dchrome-app-launcher-info-dialog][smartUp 手势]]: 简单好用的鼠标手势扩展
-   + [[https://chrome.google.com/webstore/detail/proxy-switchysharp/dpplabbmogkhghncfbfdeeokoefdjegm?utm_source%3Dchrome-app-launcher-info-dialog][Proxy SwitchSharp]]: 网络代理设置及管理
-   + [[https://chrome.google.com/webstore/detail/save-to-pocket/niloccemoadcdkdjlinkgdfekeahmflj?utm_source%3Dchrome-app-launcher-info-dialog][Save to Pocket]]: 将文章、视频保存到 Pocket 中供以后查看
-   + [[https://chrome.google.com/webstore/detail/pixezoom-pixel-perfect-zo/hapihddkcfbbcbnncecmoojbmcefgndg?utm_source%3Dchrome-app-launcher-info-dialog][Pixelzoom]]: 图片查看时不进行像素平滑，用于查看像素画
+获取工具
 
-** CCUtil
+工具放在我的 Github 项目中，项目地址为:
 
-   自己编写的 C/C++ 小工具，见 ccutil 目录
+https://github.com/Linusp/zutil
+项目 python 目录下的 tess_train.py 就是了
 
-** CCLib
+配置
 
-   自己编写的 C/C++ 库，见 cclib 目录
+见项目 python/configs/ 目录下的 tess.json，其内容为:
 
-** Shell Script
+{
+    "name": "chi_eng",
+    "font": {
+        "wqy": {
+            "font-dir": "/usr/share/fonts/truetype",
+            "sub-font": {
+                "fixed": "WenQuanYi Micro Hei"
+            }
+        },
+        "sun": {
+            "font-dir": "/home/linusp/datas/fonts/",
+            "sub-font": {
+                "serif": "SimSun"
+            }
+        },
+        "nsun": {
+            "font-dir": "/home/linusp/datas/fonts/",
+            "sub-font": {
+                "serif": "NSimSun"
+            }
+        },
+        "times": {
+            "font-dir": "/home/linusp/data/fonts/TimesNewRoman",
+            "sub-font": {
+                "italic": "Times New Roman, Italic",
+                "bold": "Times New Roman, Bold",
+                "serif": "Times New Roman,"
+            }
+        }
+    },
+    "data": {
+        "chi": {
+            "file-name": "chi.txt",
+            "font-list": ["wqy", "sun", "nsun"]
+        },
+        "eng": {
+            "file-name": "eng.txt",
+            "font-list": ["wqy", "times"]
+        }
+    }
+}
+可以看到，配置文件内容分为三大块:
 
-   见 script 目录
-   + [[file:shell/trash.sh][trash.sh]]: 更安全的删除工具
+name: 即最后生成的 traineddata 文件名称
+font: 要使用到的字体
+data: 要用于训练的文本，以及它们各自要使用的字体
+name 和 data 这两块都比较易懂，这里只对 font 这一块多做一点说明。
 
-** Python Script
+以其中的 times 为例:
 
-   见 python 目录
-   + [[file:python/tess_train.py][tess_train.py]]: OCR 工具 Tesseract 的训练工具
+"times": {
+    "font-dir": "/home/linusp/data/fonts/TimesNewRoman",
+    "sub-font": {
+        "italic": "Times New Roman, Italic",
+        "bold": "Times New Roman, Bold",
+        "serif": "Times New Roman,"
+    }
+}
+"times" 是这个字体的名称，用于区别其他字体，在训练过程中生成中间结果时也会用到。需要注意的是，一个名称不一定是只对应 一个字体文件 ，因为种字体除了它的普通形式外，还有斜体、粗体等不同样式，这些不同的样式可能是通过不同的字体文件来表现的。
+
+"font-dir" 就是字体文件所在的目录了，如上，如果要使用同一种字体的多种样式且它们在不同的字体文件中，请将它们放置到相同的目录下。
+
+"sub-font" 指定需要使用的字体样式，可用的有五种，分别是:
+
+italic: 斜体
+bold: 粗体
+serif: 衬线体
+fixed: 无衬线体
+fraktur: 哥特体
+serif 和 fixed 都是字体的普通样式，但是这两者是只能有其一的，这是字体自身设计决定的。
+
+每种字体样式对应的 真实字体名称 ，可以用 text2image 来的到:
+
+text2image --fonts_dir=/home/linusp/data/fonts/TimesNewRoman --list_available_fonts
+训练
+
+在设置好配置文件后，就可以方便地使用 tess_train.py 进行训练了， tess_train.py 的使用方法是:
+
+./tess_train.py -c <conf file> [-a <action>]
+不使用 -a 选项时，会认为是一个全新的训练过程，并将处理整个训练过程，通过 -a 选项可以指定进行训练过程中的某个子步骤，以便更灵活地控制训练过程。可以使用的 <action> 有:
+
+tifbox: 用配置文件中 "data" 部分指定的文本生成图像和 BOX 文件
+charset: 提取字符集信息并生成字符集文件
+fontprop: 生成字体信息文件
+feature: 用之前生成的图像和 BOX 文件提取每个字符的特征
+cluster: 从特征文件产生每个字符的 原型
+combine: 将中间文件打包成 traineddata
+字符识别歧义校正
+
+针对单个字符的识别，所谓歧义，包含以下三种情况(以下A, B皆为代指):
+
+将字符 A 识别作字符 B
+将一个字符 A 识别多个字符
+将多个字符识别作一个字符 A
+第一种情况就是典型的误分类情况，其后两种情况则和字符分割不正确有关系。
+
+对于这三种情况，Tesseract 提供了途径，以便在后处理时对识别结果进行校正。方法是在 traineddata 中添加 unicharambigs 这个 歧义校正文件 。
+
+该文件有两种格式，旧版本格式在文件首行用 v1 标识，对应的新版本的则用 v2 标识。
+
+注意: 歧义校正文件应编码为 UTF-8
+
+旧版本格式
+
+不管是哪个版本，unicharambigs 文件都是以文本文件的形式存在，并且每行一条校正规则。
+
+在旧版本格式中，每条校正规则是这样的:
+
+<字符数量> <字符串> <校正后的字符数量> <校正后的字符串> <是否强制替换>
+最后一个字段如果为 0,则表示匹配到该规则时，不会进行强制替换，只是提供 "建议" ；为 0 时则进行强制替换。
+
+比如说如果 unicharambigs 文件中内容为:
+
+v1
+2 ' ' 1 " 1
+1 m 2 r n 0
+3 i i i 1 m 0
+从前到后三条规则的含义分别为:
+
+识别结果中两个连续的单引号(')应当被强制替换为双引号(")
+识别结果中的字符 m 有可能是 rn
+识别结果中的连续字符串 iii 可能是字符 m
+新版本格式
+
+新版本格式更为友好一点，每条校正规则为:
+
+<字符串> <字符串> <是否强制替换>
+上面那个例子可以写作:
+
+v2
+'' " 1
+m rn 0
+iii m 0
+需要注意的是，新版本格式里的两个字符串 内部不能有空格 。
+
+词典: DAWG 文件
+
+上篇中提到有 DAWG 文件可以增强、调整识别结果，这些 DAWG 文件被称为词典(dictionary)，使用来对识别结果进行后处理的。
+
+所谓后处理是这样的: 对没一个字符，都会有多个候选结果，如果每次都挑选候选结果中最好的结果，不一定是正确的，这是因为实际的数据中会有各种各样的干扰信息，所谓的 "最好结果" 并不一定是正确的结果。在 假设 待识别的文本都是由正常的、 拼写正确的 词组成的时，通过预定义的词典，就可以 以词为单位 对识别结果进行校正。
+
+在 Tesseract 中，DAWG 文件就是作为词典用在后处理中的，自然也应该是从训练用的文本中进行统计得到的。
+
+Tesseract 中支持的 DAWG 文件有五种类型，分别是:
+
+word-dawg
+
+这个词典文件记录可用的词，每个词占一行。
+
+freq-dawg
+
+这个词典文件记录最常用的一些词，建议数量在 百 这个量级。
+
+bigram-dawg
+
+这个词典记录二元词，同样每个二元词一行。
+
+所谓的二元词是由前后连续的两个词组成的一个单元，比如说
+
+生存 还是 死亡 这 是 一个 问题
+这句话里的二元词就有:
+
+生存 还是
+还是 死亡
+死亡 这
+这 是
+是 一个
+一个 问题
+其实这已经近似一个二元语言模型(2-Gram Language Model)了，只不过这里不记录词频等信息。
+
+另外一点要注意的是，在 bigram-dawg 中，二元词之中的数字统一用英文的问号(?)替代
+
+number-dawg
+
+这个词典用来记录包含数字的词，同样每个词一行，但和 word-dawg 不一样的是，这里记录的词里面的数字，都要用空格替代。
+
+punc-dawg
+
+这个文件用来记录标点的 模式 ，所谓模式就是说标点在训练用的文本(或语言)中是如何使用的。描述不太直观，下面是从 Tesseract 的英文 traineddata 中 punc-dawg 提取出来的的一段，可以参考一下:
+
+[
+[ ]
+[ ],
+[ ];
+[ ]:
+[ ]!
+[ ]!!!
+[ ]?
+[ ]?!
+[ ]???
+[ ].
+[ ]...
+{
+{ }
+{ },
+{ };
+{ }:
+{ }!
+{ }!!!
+{ }?
+{ }?!
+{ }???
+{ }.
+{ }...
+这五个文件的名称必须是 word-dawg, freq-dawg, bigram-dawg, number-dawg 和 punc-dawg，然后和其他所有用于打包 traineddata 的中间结果一样，应当加上前缀，如要生成名为 eng.traineddata 的最终结果，这五个文件必须是 eng.word-dawg, eng.freq-dawg, eng.bigram-dawg, eng.number-dawg 和 eng.punc-dawg
+
+另外，这五个文件必须是 DAWG 格式，而不是文本文件。一般是先从训练文本中生成对应的文本文件，然后用 Tesseract 提供的 wordlist2dawg 来进行转换，如将 word-list-last 转换为 eng.word-dawg
+
+wordlist2dawg word-list-last eng.word-dawg eng.unicharset
+注意: 以上文件都应编码为 UTF-8 再转换为 DAWG 文件
